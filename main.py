@@ -95,22 +95,9 @@ def get_collection(collection_name='russel_norvig', persist_directory='chroma-ru
     return collection
 
 def main():
-    # Retrieve PostgreSQL connection details from environment variables
-    pg_database = os.getenv('PGDATABASE')
-    pg_host = os.getenv('PGHOST')
-    pg_port = os.getenv('PGPORT')
-    pg_user = os.getenv('PGUSER')
-    pg_password = os.getenv('PGPASSWORD')
-
-    # Construct PostgreSQL connection string
-    DATABASE_URL = f"postgresql://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_database}"
-
-    # Connect to PostgreSQL database
-    try:
-        conn = psycopg2.connect(DATABASE_URL)
-        logging.info("Connected to PostgreSQL database")
-    except psycopg2.Error as e:
-        logging.error(f"Unable to connect to PostgreSQL database: {e}")
+    DATABASE_URL = os.getenv('DATABASE_URL')
+    if not DATABASE_URL:
+        logging.error("Error: DATABASE_URL environment variable not found. Please provide the PostgreSQL database URL.")
         sys.exit(1)
 
     collection = get_collection()

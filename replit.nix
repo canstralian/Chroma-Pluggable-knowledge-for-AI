@@ -1,5 +1,6 @@
 { pkgs }: {
   deps = [
+    pkgs.glibcLocales
     pkgs.mailutils
     pkgs.postgresql
     pkgs.rustc

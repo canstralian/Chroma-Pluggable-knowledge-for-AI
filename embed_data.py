@@ -4,6 +4,7 @@ import logging
 import sys
 import requests
 import fitz  # PyMuPDF
+import pandas as pd
 
 import chromadb
 from chromadb.config import Settings
@@ -54,6 +55,17 @@ def process_local_pdf(file_path):
         logging.error(f"Error reading local PDF file {file_path}: {e}")
     return None
 
+def read_excel_csv(file_path):
+    try:
+        if file_path.endswith('.xlsx'):
+            df = pd.read_excel(file_path)
+        elif file_path.endswith('.csv'):
+            df = pd.read_csv(file_path)
+        return '\n'.join(df.astype(str).apply(lambda x: ' '.join(x), axis=1))
+    except Exception as e:
+        logging.error(f"Error processing Excel/CSV file {file_path}: {e}")
+    return None
+
 def main(data_dir: str, collection_name: str, persist_directory: str, api_key: str):
     if not os.path.isdir(data_dir) and not data_dir.startswith("http"):
         logging.error(f"The specified data directory does not exist or is not a valid URL: {data_dir}")
@@ -72,17 +84,19 @@ def main(data_dir: str, collection_name: str, persist_directory: str, api_key: s
             file_path = os.path.join(data_dir, filename)
             if filename.lower().endswith('.pdf'):
                 text = process_local_pdf(file_path)
-                if text:
-                    documents.append(text)
-                    metadatas.append({'filename': filename})
+            elif filename.lower().endswith(('.xlsx', '.csv')):
+                text = read_excel_csv(file_path)
             else:
                 try:
                     with open(file_path, 'r') as file:
-                        documents.append(file.read())
-                        metadatas.append({'filename': filename})
-                        logging.info(f"Processed file: {filename}")
+                        text = file.read()
                 except Exception as e:
                     logging.warning(f"Failed to read file {filename}: {e}")
+                    continue
+
+            if text:
+                documents.append(text)
+                metadatas.append({'filename': filename})
 
     collection = get_or_create_collection(collection_name, persist_directory, api_key)
 
@@ -104,11 +118,3 @@ if __name__ == "__main__":
     parser.add_argument('--persist_directory', required=True, type=str, help='The directory where you want to store the Chroma collection')
     parser.add_argument('--collection_name', required=True, type=str, help='The name of the Chroma collection')
 
-    args = parser.parse_args()
-
-    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-    if not OPENAI_API_KEY:
-        logging.error("OpenAI API key is not set. Set the OPENAI_API_KEY environment variable.")
-        sys.exit(1)
-
-    main(data_dir=args.data_directory, collection_name=args.collection_name, persist_directory=args.persist_directory, api_key=OPENAI_API_KEY)
