@@ -36,6 +36,8 @@ rm -fr /tmp/poetry
 
 # Clean up
 rm linkify.py
+# Install dependencies
+poetry install
 
 # Install custom python3 script which will have the LD_LIBRARY_PATH set
 # for important C libraries as defined in replit.nix
@@ -45,4 +47,7 @@ chmod u+x venv/bin/python3
 ln -s $HOME/$REPL_SLUG/venv/bin/python3 venv/bin/python3.10
 
 #poetry install
+
+# Run the repl
+exec venv/bin/python3 "$@
 
