@@ -15,7 +15,7 @@ openai = "0.27.2"
 tiktoken = "0.3.2"
 psycopg2-binary = "^2.9.9"
 fitz = "^0.0.1-alpha.2"
-requests = "^2.31.0"
+requests = "^2.32.0"
 pandas = "^2.2.2"
 
 [tool.poetry.dev-dependencies]
